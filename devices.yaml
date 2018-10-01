@@ -1,0 +1,9 @@
+main:
+  data: ./data  # where conf backup stored
+
+Dev_Example:
+  host: 127.0.0.1:2008
+  protocol: telnet
+  login: admin
+  type: nxos
+  password: 'Pa$$word'
