@@ -13,7 +13,7 @@ import time
 class MyNXOSDriver(NXOSDriver):
     def __init__(self):
         NXOSDriver.__init__(self)
-        self.user_re = self.user_re + [re.compile(r'[^:]* login: ?$', re.I)]
+        self.user_re = self.user_re + [re.compile(r'([^:]* )?login: ?$', re.I)]
 
 
 add_driver(MyNXOSDriver)
