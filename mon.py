@@ -134,7 +134,7 @@ class DeviceScope(object):
             except DevConnectionError as e:
                 logger.error(e)
             except (ProtocolException, TimeoutException) as e:
-                logger.error('{} {} {}'.format(device.get_uri(), device.proxy, e))
+                logger.error('{} {}'.format(device.get_uri(), e))
 
             # TODO: to be fixed in next version exscript
             except UnboundLocalError as e:
