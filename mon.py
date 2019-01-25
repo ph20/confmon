@@ -7,6 +7,7 @@ from Exscript.protocols import SSH2, Telnet
 from Exscript.protocols.drivers.nxos import NXOSDriver
 from Exscript.protocols.drivers import add_driver
 from Exscript.protocols.exception import ProtocolException, TimeoutException
+from brigit import Git
 
 import yaml
 import time
@@ -103,6 +104,7 @@ class DeviceScope(object):
     def __init__(self):
         self.scope = list()
         self.data_dir = '.'
+        self.main = None
 
     def load_yaml(self, path):
         logger.warning('loading config "{}"'.format(path))
@@ -111,8 +113,8 @@ class DeviceScope(object):
         logger.warning('config "{}" loaded success'.format(path))
         if MAIN_SECTION in data:
             logger.warning('detected main in config'.format(path))
-            main = data.pop(MAIN_SECTION)
-            self.data_dir = main.get('data', self.data_dir)
+            self.main = data.pop(MAIN_SECTION)
+            self.data_dir = self.main.get('data', {}).get('path', self.data_dir)
 
         for dev_name, dev_data in data.items():
             host, port = pars_host_str(dev_data['host'])
@@ -127,10 +129,17 @@ class DeviceScope(object):
             self.scope.append(dev)
 
     def dump(self):
+        git = Git(self.data_dir, remote=self.main['data']['git_remote'])
         for device in self.scope:
             try:
                 device.connect()
-                device.dump_show_run(path=os.path.abspath(os.path.join(self.data_dir, device.name + '.cnf')))
+                conf_name = device.name + '.cnf'
+                dump_path = os.path.abspath(os.path.join(self.data_dir, conf_name))
+                device.dump_show_run(path=dump_path)
+
+                git.add(conf_name)
+                git.commit(message="Device {} was updated".format(device.name))
+
             except DevConnectionError as e:
                 logger.error(e)
             except (ProtocolException, TimeoutException) as e:
@@ -139,6 +148,8 @@ class DeviceScope(object):
             # TODO: to be fixed in next version exscript
             except UnboundLocalError as e:
                 logger.error('Connection refused {}'.format(device.get_uri()))
+
+            git.push()
 
 
 if __name__ == '__main__':

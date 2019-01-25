@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 exscript = "*"
 pyyaml = "==4.2b4"
+brigit = "*"
 
 [dev-packages]
 

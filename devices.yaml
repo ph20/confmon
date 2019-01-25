@@ -1,9 +1,56 @@
 main:
-  data: ./data  # where conf backup stored
+  data:
+    path: ./data
+    git_user_email: nobody@nobody.com
+    git_user_name:  Nobody Nobody
+    git_remote: 'ssh://git@bitbucket-eng-sjc1.cisco.com:7999/~ogrynchu/asa_testbed_rancid.git'
 
-Dev_Example:
-  host: 127.0.0.1:2008
+
+Rack8_N9K:
+  host: 10.194.200.105:2008
   protocol: telnet
   login: admin
   type: nxos
-  password: 'Pa$$word'
+  password: 'Cisco123!@#'
+
+None:
+  host: 10.194.200.106:2019
+  protocol: telnet
+  login: admin
+  type: nxos
+  password: 'Cisco123!@#'
+
+Rack_None2:
+  host: 192.168.168.6:23
+  protocol: telnet
+  login: admin
+  type: nxos
+  password: 'Cisco123!@#'
+
+Rack_None3:
+  host: 192.168.168.8:23
+  protocol: telnet
+  login: admin
+  type: nxos
+  password: 'Cisco123!@#'
+
+Rack8_N5K_1_7:
+  host: 192.168.168.7:23
+  protocol: telnet
+  login: admin
+  type: nxos
+  password: 'Cisco123!@#'
+
+Rack8_N5K_1_9:
+  host: 192.168.168.9:23
+  protocol: telnet
+  login: admin
+  type: nxos
+  password: 'Cisco123!@#'
+
+Rack8_ASR1004:
+  host: 192.168.168.118:23
+  protocol: telnet
+  login: admin1
+  type: ios_xr
+  password: 'cisco123'

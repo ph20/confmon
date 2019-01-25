@@ -1,0 +1,1 @@
+rsync -avz --delete-after --exclude=.idea/ --exclude=.git/ /mnt/data/ogrynch/proj/confmon/. ubox:/home/ogrynchu/confmon
