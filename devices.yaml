@@ -4,6 +4,7 @@ main:
     git_user_email: nobody@nobody.com
     git_user_name:  Nobody Nobody
     git_remote: 'ssh://git@bitbucket-eng-sjc1.cisco.com:7999/~ogrynchu/asa_testbed_rancid.git'
+    git_branch: 'test'
 
 
 Rack8_N9K:
