@@ -1,0 +1,15 @@
+main:
+  data:
+    path: ./data # directory for saving config files
+    git_user_email: <nobody@nobody.com> # github account email
+    git_user_name:  <Nobody Nobody> # github account name
+    git_remote: 'git@github.com:<user>/<sample_repository>.git' # url for remote repository
+    git_branch: '<branch>' # name of github branch
+
+
+Testdevice: # device name
+  host: 192.168.56.1:5000 # ip:port
+  protocol: telnet # protocol (telnet, ssh)
+  login: 'admin' # user
+  type: 'ios' # os type (nxos, ios, ios_xr, junos, e.c.t)
+  password: 'admin' # password

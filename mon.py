@@ -4,6 +4,7 @@
 import logging
 import os
 import re
+import tempfile
 import time
 
 import diffios
@@ -75,6 +76,8 @@ class Device(object):
         self._exscript_host = None
         self._conn = None
 
+        self.tempfile = tempfile.NamedTemporaryFile(delete=False)
+
     def get_uri(self):
         """Get url for connect"""
         uri = '{protocol}://{login}@{host}'.format(**self.__dict__)
@@ -132,30 +135,14 @@ class Device(object):
             cnf_.write(self.show_run())
         logger.warning('show run {} dumped to "{}" file success'.format(self.get_uri(), path))
 
-    @staticmethod
-    def dump_config(dirname, path, temp_path):
-        """Backup config in temp directory"""
+    def dump_config(self, path):
+        """Write config into tempfile"""
         logger.warning('Start backup previous config file {}'.format(path))
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
         if os.path.exists(path):
-            with open(path, 'r') as src, open(temp_path, 'w') as dst:
-                dst.write(src.read())
-            logger.warning('Config {} backup to {}'.format(path, temp_path))
+            with open(path, 'rb') as src, self.tempfile as temp:
+                temp.write(src.read())
         else:
             logger.warning('Nothing to backup.')
-
-    @staticmethod
-    def push_to_git(git, git_remote, git_branch, device, conf_name):
-        """Make commit and push changes to remote git"""
-        try:
-            git.checkout(git_branch)
-            git.add(conf_name)
-            git.commit(message="Device {} was updated".format(device.name))
-            git.push()
-            logger.warning("Changes pushed to remote git {}".format(git_remote))
-        except GitException:
-            logger.warning("Nothing to commit!")
 
 
 class DeviceScope(object):
@@ -193,14 +180,14 @@ class DeviceScope(object):
         git_remote = self.main['data']['git_remote']
         git_branch = self.main['data']['git_branch']
         git = Git(self.data_dir, remote=git_remote)
+        git.checkout(git_branch)
+        updated_devices = []
         for device in self.scope:
             try:
                 device.connect()
                 conf_name = device.name + '.cnf'
-                data_dir = os.path.abspath(self.data_dir)
                 dump_path = os.path.abspath(os.path.join(self.data_dir, conf_name))
-                dump_temp_path = os.path.abspath(os.path.join('{}/temp'.format(self.data_dir), conf_name))
-                device.dump_config(r'{}\temp'.format(data_dir), dump_path, dump_temp_path)
+                device.dump_config(path=dump_path)
                 device.dump_show_run(path=dump_path)
                 device.exit()
             except DevConnectionError as e:
@@ -211,18 +198,19 @@ class DeviceScope(object):
             # TODO: to be fixed in next version exscript
             except UnboundLocalError:
                 logger.error('Connection refused {}'.format(device.get_uri()))
-            # except GitException:
-            #     logger.error("Nothing changed in config {}.cnf".format(device.name))
             else:
-                if os.path.exists(dump_temp_path):
-                    diffs = diffios.Compare(dump_temp_path, dump_path)
-                    if diffs:
-                        logger.warning(diffs.delta())
-                        device.push_to_git(git, git_remote, git_branch, device, conf_name)
-                    else:
-                        logger.error("Nothing changed in config {}.cnf".format(device.name))
+                diffs = diffios.Compare(device.tempfile.name, dump_path)
+                if diffs.additional():
+                    logger.warning(diffs.delta())
+                    git.add(conf_name)
+                    updated_devices.append(device.name)
                 else:
-                    device.push_to_git(git, git_remote, git_branch, device, conf_name)
+                    logger.error("Nothing changed in config {}.cnf".format(device.name))
+
+        if updated_devices:
+            git.commit(message="Devices {} were updated".format(updated_devices))
+            git.push()
+            logger.warning("Changes pushed to remote git {}".format(git_remote))
 
 
 if __name__ == '__main__':
