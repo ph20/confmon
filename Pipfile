@@ -5,10 +5,11 @@ name = "pypi"
 
 [packages]
 exscript = "*"
-pyyaml = "==4.2b4"
+pyyaml = "*"
 brigit = "*"
+diffios = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.6"
+python_version = "3.4"

@@ -1,0 +1,4 @@
+exscript==2.6.2
+pyyaml==4.2b4
+brigit==1.2
+diffios==0.0.9
