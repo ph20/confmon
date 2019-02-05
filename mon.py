@@ -1,11 +1,16 @@
-"""Main file for running configurate monitor"""
 #!/usr/bin/env python3
+"""
+Main file for running configurate monitor
+"""
 
 import logging
 import os
 import re
 import tempfile
 import time
+import sys
+import argparse
+import urllib.request
 
 import diffios
 import yaml
@@ -16,7 +21,7 @@ from Exscript.protocols.drivers.ios import IOSDriver
 from Exscript.protocols.drivers.ios_xr import IOSXRDriver
 from Exscript.protocols.drivers.nxos import NXOSDriver
 from Exscript.protocols.exception import ProtocolException, TimeoutException
-from brigit import Git, GitException
+from brigit import Git
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -155,8 +160,14 @@ class DeviceScope(object):
     def load_yaml(self, path):
         """Testbed devices"""
         logger.warning('loading config "{}"'.format(path))
-        with open(path) as _:
-            data = yaml.load(_)
+        if isinstance(path, str):
+            with open(path) as _:
+                data = yaml.load(_)
+        elif hasattr(path.read) and hasattr(path.name):
+            data = yaml.load(path)
+        else:
+            raise TypeError('argument path should be path or file like object')
+
         logger.warning('config "{}" loaded success'.format(path))
         if MAIN_SECTION in data:
             logger.warning('detected main in config {}'.format(path))
@@ -213,7 +224,26 @@ class DeviceScope(object):
             logger.warning("Changes pushed to remote git {}".format(git_remote))
 
 
-if __name__ == '__main__':
+def pars(argv_):
+    parser = argparse.ArgumentParser(description='Utilite for monitorung cisco devices')
+    parser.add_argument('config', type=str,
+                        help='path to yaml file in format http://domain/urlpath for config on http server '
+                             'or path/path fol local stored file')
+
+    return parser.parse_args(argv_)
+
+
+def main(argv_):
+    args = pars(argv_)
+    config_path = args.config
     scope = DeviceScope()
-    scope.load_yaml('devices.yaml')
+    if config_path.startswith('http://') or config_path.startswith('https://'):
+        with urllib.request.urlopen(config_path) as response:
+            scope.load_yaml(response)
+    else:
+        scope.load_yaml(config_path)
     scope.dump()
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
