@@ -22,9 +22,9 @@ Vagrant.configure("2") do |config|
     d.has_ssh = true
     d.ports = ["#{EXPOSEDPORT}:22"]
 
-    d.vagrant_machine = "dockerhost"
-    d.force_host_vm = true
-    d.vagrant_vagrantfile = "/home/ogrynch/ASA/wipro/devenv/docker-host-vm/Vagrantfile"
+    #d.vagrant_machine = "dockerhost"
+    #d.force_host_vm = true
+    #d.vagrant_vagrantfile = "/home/ogrynch/ASA/wipro/devenv/docker-host-vm/Vagrantfile"
   end
   config.vm.synced_folder "./", "/workspace"
   config.vm.synced_folder ".", "/vagrant", disabled: true
